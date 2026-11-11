@@ -2,11 +2,11 @@
 
 Варіант 8 -> категорія 4: схід і захід небесних тіл.
 З ~40 колонок CSV описано тільки потрібні.
-Етап 2 (після міграції 002):
+Етап 3 (після міграції 003):
   weather   - загальні дані про погоду
-  astronomy - схід/захід сонця і місяця (категорія варіанту)
+  astronomy - схід/захід сонця і місяця + "Чи варто виходити на вулицю"
 """
-from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String, Time
+from sqlalchemy import Boolean, Column, DateTime, Enum, Float, ForeignKey, Integer, String, Time
 from sqlalchemy.orm import DeclarativeBase, relationship
 
 # Можливі значення enum-колонок (такі, як у датасеті)
@@ -49,5 +49,6 @@ class Astronomy(Base):
     moonset = Column(Time)                                 # час
     moon_phase = Column(Enum(*MOON_PHASES, name="moon_phase_enum"))  # enum
     moon_illumination = Column(Integer)                    # ціле, %
+    go_outside = Column(Boolean, nullable=False)           # "Чи варто виходити на вулицю"
 
     weather = relationship("Weather", back_populates="astronomy")
