@@ -2,10 +2,12 @@
 
 Варіант 8 -> категорія 4: схід і захід небесних тіл.
 З ~40 колонок CSV описано тільки потрібні.
-Етап 1: усе в одній таблиці weather.
+Етап 2 (після міграції 002):
+  weather   - загальні дані про погоду
+  astronomy - схід/захід сонця і місяця (категорія варіанту)
 """
-from sqlalchemy import Column, DateTime, Enum, Float, Integer, String, Time
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String, Time
+from sqlalchemy.orm import DeclarativeBase, relationship
 
 # Можливі значення enum-колонок (такі, як у датасеті)
 WIND_DIRECTIONS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
@@ -32,10 +34,20 @@ class Weather(Base):
     wind_degree = Column(Integer)                          # ціле
     wind_direction = Column(Enum(*WIND_DIRECTIONS, name="wind_direction_enum"))  # enum
 
-    # Категорія варіанту: схід і захід небесних тіл
+    # зв'язок "один до одного" з таблицею astronomy
+    astronomy = relationship("Astronomy", back_populates="weather", uselist=False)
+
+
+class Astronomy(Base):
+    __tablename__ = "astronomy"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    weather_id = Column(Integer, ForeignKey("weather.id"), nullable=False, unique=True)
     sunrise = Column(Time)                                 # час
     sunset = Column(Time)                                  # час
     moonrise = Column(Time)                                # час
     moonset = Column(Time)                                 # час
     moon_phase = Column(Enum(*MOON_PHASES, name="moon_phase_enum"))  # enum
     moon_illumination = Column(Integer)                    # ціле, %
+
+    weather = relationship("Weather", back_populates="astronomy")
